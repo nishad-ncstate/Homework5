@@ -1,0 +1,152 @@
+---
+title: "Homework 5"
+author: Nishad Waghmare
+output: html_document
+---
+
+# Task 1: Conceptual Questions
+
+1.  **What is the purpose of using cross-validation when fitting a random forest model?**
+
+    Cross-validation is used to evaluate the performance of the model by splitting the data into multiple training and testing sets. It helps in ensuring that the model is not overfitting and gives a reliable estimate of its performance on unseen data.
+
+2.  **Describe the bagged tree algorithm.**
+
+    Bagging, or Bootstrap Aggregating, involves creating multiple subsets of the original dataset by sampling with replacement. A decision tree model is trained on each subset, and the final prediction is made by averaging (for regression) or majority voting (for classification) of all the individual tree predictions.
+
+3.  **What is meant by a general linear model?**
+
+    A general linear model is an extension of linear regression that allows for multiple predictor variables and can model various types of relationships between the dependent and independent variables.
+
+4.  **When fitting a multiple linear regression model, what does adding an interaction term do?**
+
+    Adding an interaction term allows the model to account for the effect of one predictor variable on the response variable depending on the level of another predictor variable. It helps in modeling more complex relationships between variables.
+
+5.  **Why do we split our data into a training and test set?**
+
+    Splitting the data into training and test sets helps in evaluating the model's performance on unseen data. The training set is used to fit the model, and the test set is used to assess its generalization ability.
+
+# Task 2: Fitting Models
+
+```{r}
+# Load necessary libraries
+library(tidyverse)
+library(caret)
+
+# Load the data
+heart_data <- read.csv("C:/Users/karen/Downloads/heart.csv")
+
+# Convert HeartDisease to factor
+heart_data$HeartDisease <- as.factor(heart_data$HeartDisease)
+
+# Remove ST_Slope variable
+heart_data <- heart_data %>% select(-ST_Slope)
+
+# Create dummy variables
+dummies <- dummyVars(HeartDisease ~ ., data = heart_data)
+heart_data_transformed <- predict(dummies, newdata = heart_data)
+heart_data_transformed <- as.data.frame(heart_data_transformed)
+
+# Add HeartDisease back to the transformed data
+heart_data_transformed$HeartDisease <- heart_data$HeartDisease
+
+# Split data into training and test sets
+set.seed(123)
+trainIndex <- createDataPartition(heart_data_transformed$HeartDisease, p = .8, 
+                                   list = FALSE, 
+                                   times = 1)
+heart_train <- heart_data_transformed[trainIndex, ]
+heart_test <- heart_data_transformed[-trainIndex, ]
+
+# Ensure HeartDisease is a factor in both training and test sets
+heart_train$HeartDisease <- as.factor(heart_train$HeartDisease)
+heart_test$HeartDisease <- as.factor(heart_test$HeartDisease)
+
+### KNN Model
+# Train kNN Model with Cross-Validation
+train_control <- trainControl(method = "repeatedcv", number = 10, repeats = 3)
+knn_grid <- expand.grid(k = 1:40)
+
+knn_model <- train(HeartDisease ~ ., data = heart_train, method = "knn", 
+                   trControl = train_control, tuneGrid = knn_grid, 
+                   preProcess = c("center", "scale"))
+
+# Evaluate kNN Model on Test Set
+knn_predictions <- predict(knn_model, newdata = heart_test)
+confusionMatrix(knn_predictions, heart_test$HeartDisease)
+
+### Logistic Regression Models
+# Fit three different logistic regression models
+logit_model1 <- train(HeartDisease ~ Age + SexM + Cholesterol, 
+                       data = heart_train, 
+                       method = "glm", 
+                       family = binomial, 
+                       trControl = train_control)
+
+logit_model2 <- train(HeartDisease ~ Age + RestingBP + MaxHR, 
+                       data = heart_train, 
+                       method = "glm", 
+                       family = binomial, 
+                       trControl = train_control)
+
+logit_model3 <- train(HeartDisease ~ Age + SexM + RestingBP + MaxHR, 
+                       data = heart_train, 
+                       method = "glm", 
+                       family = binomial, 
+                       trControl = train_control)
+
+# Evaluate Logistic Regression Models
+logit_predictions1 <- predict(logit_model1, newdata = heart_test)
+confusionMatrix(logit_predictions1, heart_test$HeartDisease)
+
+logit_predictions2 <- predict(logit_model2, newdata = heart_test)
+confusionMatrix(logit_predictions2, heart_test$HeartDisease)
+
+logit_predictions3 <- predict(logit_model3, newdata = heart_test)
+confusionMatrix(logit_predictions3, heart_test$HeartDisease)
+
+### Tree Models
+# Classification Tree Model
+tree_model <- train(HeartDisease ~ ., data = heart_train, method = "rpart", 
+                    trControl = train_control, tuneGrid = expand.grid(cp = seq(0, 0.1, by = 0.001)))
+
+# Random Forest Model
+rf_model <- train(HeartDisease ~ ., data = heart_train, method = "rf", 
+                  trControl = train_control, tuneGrid = expand.grid(mtry = 1:ncol(heart_train)))
+
+# Boosted Tree Model
+gbm_grid <- expand.grid(n.trees = c(25, 50, 100, 200), 
+                        interaction.depth = c(1, 2, 3), 
+                        shrinkage = 0.1, 
+                        n.minobsinnode = 10)
+gbm_model <- train(HeartDisease ~ ., data = heart_train, method = "gbm", 
+                   trControl = train_control, tuneGrid = gbm_grid, verbose = FALSE)
+
+# Evaluate Tree Models
+tree_predictions <- predict(tree_model, newdata = heart_test)
+confusionMatrix(tree_predictions, heart_test$HeartDisease)
+
+rf_predictions <- predict(rf_model, newdata = heart_test)
+confusionMatrix(rf_predictions, heart_test$HeartDisease)
+
+gbm_predictions <- predict(gbm_model, newdata = heart_test)
+confusionMatrix(gbm_predictions, heart_test$HeartDisease)
+
+### Summary and Comparison
+# Compare results and summarize models
+summary(logit_model1)
+summary(logit_model2)
+summary(logit_model3)
+
+
+
+
+
+```
+## Wrap Up
+
+**Which model overall did the best job (in terms of accuracy) on the test set?**
+
+Overall, the Boosted Tree Model (GBM) is the most accurate model with an accuracy of 0.8798. This model outperforms all the other models in terms of accuracy on the test set.
+
+
