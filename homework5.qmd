@@ -143,10 +143,9 @@ summary(logit_model3)
 
 
 ```
+
 ## Wrap Up
 
 **Which model overall did the best job (in terms of accuracy) on the test set?**
 
 Overall, the Boosted Tree Model (GBM) is the most accurate model with an accuracy of 0.8798. This model outperforms all the other models in terms of accuracy on the test set.
-
-
