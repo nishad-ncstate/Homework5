@@ -1,0 +1,16 @@
+[
+  {
+    "objectID": "homework5.html",
+    "href": "homework5.html",
+    "title": "Homework 5",
+    "section": "",
+    "text": "What is the purpose of using cross-validation when fitting a random forest model?\nCross-validation is used to evaluate the performance of the model by splitting the data into multiple training and testing sets. It helps in ensuring that the model is not overfitting and gives a reliable estimate of its performance on unseen data.\nDescribe the bagged tree algorithm.\nBagging, or Bootstrap Aggregating, involves creating multiple subsets of the original dataset by sampling with replacement. A decision tree model is trained on each subset, and the final prediction is made by averaging (for regression) or majority voting (for classification) of all the individual tree predictions.\nWhat is meant by a general linear model?\nA general linear model is an extension of linear regression that allows for multiple predictor variables and can model various types of relationships between the dependent and independent variables.\nWhen fitting a multiple linear regression model, what does adding an interaction term do?\nAdding an interaction term allows the model to account for the effect of one predictor variable on the response variable depending on the level of another predictor variable. It helps in modeling more complex relationships between variables.\nWhy do we split our data into a training and test set?\nSplitting the data into training and test sets helps in evaluating the model’s performance on unseen data. The training set is used to fit the model, and the test set is used to assess its generalization ability."
+  },
+  {
+    "objectID": "homework5.html#wrap-up",
+    "href": "homework5.html#wrap-up",
+    "title": "Homework 5",
+    "section": "Wrap Up",
+    "text": "Wrap Up\nWhich model overall did the best job (in terms of accuracy) on the test set?\nOverall, the Boosted Tree Model (GBM) is the most accurate model with an accuracy of 0.8798. This model outperforms all the other models in terms of accuracy on the test set."
+  }
+]
